@@ -20,12 +20,11 @@ def start_message(message):
     bot.send_message(message.chat.id, 'Start bot')
     
     global strategy_sol
-    
+    date = 0
     while True:
-        date = 0
         report_sol, _date_sol, flag = strategy_sol.strategy()
         
-        if flag == True:
+        if flag:
             _date_sol = False
             try:
                 bot.send_message(chat_id_ivan, f"Exited \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
