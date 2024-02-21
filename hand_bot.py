@@ -49,7 +49,7 @@ def start_message(message):
                     print("Error from telegramm")
                     time.sleep(1)
                 
-                bot.send_message(chat_id_ivan, text=f"start_bank: {500} \n now_bank: {int(report_sol["bank"])} \n profit: {(int(report_sol["bank"]) - 500) / 500 * 100}")
+                bot.send_message(chat_id_ivan, text=f"start_bank: {500} \n now_bank: {int(report_sol['bank'])} \n profit: {(int(report_sol['bank']) - 500) / 500 * 100}")
                 print(datetime.now())
                 
         time.sleep(10)
