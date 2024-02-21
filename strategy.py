@@ -26,7 +26,7 @@ class Strategy():
         signal = pd.to_numeric(df_lc.tail(1)["signal"].item())
         
         if signal == self.pred_position:
-            return df, False, True
+            return df, _date, True
         
         if signal == self.position:
             pos = "hold long" if signal == 1 else "hold short"

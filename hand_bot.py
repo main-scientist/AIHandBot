@@ -25,9 +25,9 @@ def start_message(message):
         report_sol, _date_sol, flag = strategy_sol.strategy()
         
         if flag:
-            _date_sol = False
+            # _date_sol = False
             try:
-                bot.send_message(chat_id_ivan, f"Exited \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
+                bot.send_message(chat_id_ivan, f"Waiting \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
             except Exception as e:
                 print("Error from telegramm")
                 time.sleep(1)
