@@ -70,7 +70,7 @@ class Strategy():
         self.position = signal
         
         report = self.get_report(_date, self.enter_price, price_now, pos, signal)
-        return report, _date
+        return report, _date, False
     
     
     def get_report(self, _date, enter_price, price_now, pos, signal):
