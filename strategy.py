@@ -74,6 +74,7 @@ class Strategy():
     
     
     def get_report(self, _date, enter_price, price_now, pos, signal):
+        print(self.bank, self.enter_price)
         bank = 0
         if signal == -1:
             v = (self.bank / (self.enter_price / self.leverage))
@@ -110,7 +111,7 @@ class Strategy():
             a = session.get_kline(
                 category="linear",
                 symbol=self.TOKEN,
-                interval="15",
+                interval=self.timeline,
                 # start=start_timestamp,
                 # end=end_timestamp,
                 limit=1000
