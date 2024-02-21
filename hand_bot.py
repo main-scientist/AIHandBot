@@ -13,7 +13,7 @@ chat_id_ivan = "568629044"
 chat_id_nikita = "341437095"
 bot = telebot.TeleBot("6742853817:AAH4bj8AEi2wdHZjpbm-kUbHbddyI4Qnspw")
 
-strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=2, bank=100, leverage=2, fee=0.055, position=0)
+strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=1, bank=100, leverage=2, fee=0.055, position=0)
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
