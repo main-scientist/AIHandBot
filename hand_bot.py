@@ -22,7 +22,8 @@ def start_message(message):
     global strategy_sol
     date = 0
     while True:
-        print(f"Date: {date}")
+        # print(f"Date: {date}")
+        bot.send_message(chat_id_ivan, f"Date: {date}")
         report_sol, _date_sol, flag = strategy_sol.strategy()
         
         if flag:
