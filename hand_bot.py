@@ -22,6 +22,7 @@ def start_message(message):
     global strategy_sol
     date = 0
     while True:
+        print(f"Date: {date}")
         report_sol, _date_sol, flag = strategy_sol.strategy()
         
         if flag:
@@ -69,13 +70,13 @@ def message_reply(message):
         
         global strategy_sol
         try:
-            strategy_sol.exit_from_position()
+            enter_price, price_now = strategy_sol.exit_from_position()
         except Exception as e:
             print("Error from bybit")
             time.sleep(1)
         
         try:
-            bot.send_message(chat_id_ivan, text=f"Exited \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
+            bot.send_message(chat_id_ivan, text=f"Exited \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
         except Exception as e:
             print("Error from telegramm")
             time.sleep(1)

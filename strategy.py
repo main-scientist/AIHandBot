@@ -154,6 +154,7 @@ class Strategy():
         df, df_lc  = self.get_data_from_bybit()
         
         self.date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
+        enter_price = self.enter_price
         price_now = pd.to_numeric(df.tail(1)["close"].item())
         
         # exit from long
@@ -179,4 +180,6 @@ class Strategy():
             self.bank = bank
             self.position = 0
             self.pred_position = -1
+            
+        return enter_price, price_now
             
