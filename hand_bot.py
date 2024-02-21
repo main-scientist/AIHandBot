@@ -13,7 +13,7 @@ chat_id_ivan = "568629044"
 chat_id_nikita = "341437095"
 bot = telebot.TeleBot("6742853817:AAH4bj8AEi2wdHZjpbm-kUbHbddyI4Qnspw")
 
-strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
+strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=2, bank=100, leverage=2, fee=0.055, position=0)
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -30,7 +30,7 @@ def start_message(message):
                 bot.send_message(chat_id_ivan, f"Waiting \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
             except Exception as e:
                 print("Error from telegramm")
-                time.sleep(1)
+                time.sleep(10)
         
         if _date_sol is False:
             try:
