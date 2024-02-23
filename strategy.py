@@ -50,6 +50,7 @@ class Strategy():
                     + self.bank - fee_open - fee_close
                 self.enter_price = price_now
                 self.bank = bank
+                self.pred_position = 1
         
         # long    
         if signal == 1:
@@ -66,6 +67,7 @@ class Strategy():
                     + self.bank - fee_open - fee_close
                 self.enter_price = price_now
                 self.bank = bank
+                self.pred_position = -1
         
         self.position = signal
         

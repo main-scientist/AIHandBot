@@ -28,7 +28,7 @@ def start_message(message):
             # _date_sol = False
             try:
                 bot.send_message(chat_id_ivan, f"Waiting \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
-                time.sleep(250)
+                time.sleep(500)
             except Exception as e:
                 print("Error from telegramm")
                 time.sleep(10)
@@ -45,7 +45,7 @@ def start_message(message):
                 date = _date_sol
                 try:    
                     bot.send_message(chat_id_ivan, text=json.dumps(report_sol, indent=2, separators=(',', ': ')))
-                    bot.send_message(chat_id_ivan, text=f"start_bank: {100} \n now_bank: {int(report_sol['bank'])} \n profit: {(int(report_sol['bank']) - 100) / 100 * 100}")
+                    bot.send_message(chat_id_ivan, text=f"start_bank: {100} \n now_bank: {round(report_sol['bank'], 2)} \n profit: {(round(report_sol['bank'], 2) - 100) / 100 * 100}")
                 except Exception as e:
                     print("Error from telegramm")
                     time.sleep(1)
