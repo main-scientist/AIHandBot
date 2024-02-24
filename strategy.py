@@ -185,4 +185,40 @@ class Strategy():
             self.pred_position = -1
             
         return enter_price, price_now
-            
+    
+    
+    def get_rate_now(self):
+        try:
+            session = HTTP()
+            a = session.get_kline(
+                category="linear",
+                symbol=self.TOKEN,
+                interval=self.timeline,
+                limit=1
+            )
+        except Exception as e:
+            return "Custom except: error load data from api bybit", "Error"
+        columns = ["date", "open", "high", "low", "close"]
+        
+        timestamps_milliseconds = [item[0] for item in a["result"]["list"]]
+        timestamps_numeric = pd.to_numeric(timestamps_milliseconds)
+        df = pd.DataFrame({
+            "date": pd.to_datetime(timestamps_numeric, unit='ms', origin='unix'),
+            "open": [item[1] for item in a["result"]["list"]],
+            "high": [item[2] for item in a["result"]["list"]],
+            "low": [item[3] for item in a["result"]["list"]],
+            "close": [item[4] for item in a["result"]["list"]],
+            "volume": [item[5] for item in a["result"]["list"]],
+        })
+        columns = ["date", "open", "high", "low", "close"]
+        df = df_sol[columns]
+        df = pd.DataFrame(df, columns=columns)
+        df = df.sort_index(ascending=False)
+        df = df.reset_index()
+        df = df.drop(["index"], axis=1)
+        df["open"] = pd.to_numeric(df["open"])
+        df["high"] = pd.to_numeric(df["high"])
+        df["low"] = pd.to_numeric(df["low"])
+        df["close"] = pd.to_numeric(df["close"])
+        
+        return df["close"].item()
