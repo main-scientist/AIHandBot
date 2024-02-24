@@ -60,7 +60,7 @@ def start_message(message):
                 date_btc = _date_btc
                 try:    
                     bot.send_message(chat_id_ivan, text=json.dumps(report_btc, indent=2, separators=(',', ': ')))
-                    bot.send_message(chat_id_ivan, text=f"start_bank: {100} \n now_bank: {round(report_btc['bank'], 2)} \n profit: {(round(report_btc['bank'], 2) - 100) / 100 * 100}")
+                    bot.send_message(chat_id_ivan, text=f"start_bank_BTC: {100} \n now_bank_BTC: {round(report_btc['bank'], 2)} \n profit: {(round(report_btc['bank'], 2) - 100) / 100 * 100}")
                 except Exception as e:
                     print("Error from telegramm")
                     time.sleep(1)
@@ -88,7 +88,7 @@ def start_message(message):
                 date_sol = _date_sol
                 try:    
                     bot.send_message(chat_id_ivan, text=json.dumps(report_sol, indent=2, separators=(',', ': ')))
-                    bot.send_message(chat_id_ivan, text=f"start_bank: {100} \n now_bank: {round(report_sol['bank'], 2)} \n profit: {(round(report_sol['bank'], 2) - 100) / 100 * 100}")
+                    bot.send_message(chat_id_ivan, text=f"start_bank_SOL: {100} \n now_bank_SOL: {round(report_sol['bank'], 2)} \n profit: {(round(report_sol['bank'], 2) - 100) / 100 * 100}")
                 except Exception as e:
                     print("Error from telegramm")
                     time.sleep(1)
