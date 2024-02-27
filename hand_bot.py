@@ -40,13 +40,13 @@ def start_message(message):
     while True:
         report_btc, _date_btc, flag_btc = strategy_btc.strategy()
         
-        if flag_btc:
-            try:
-                bot.send_message(chat_id_ivan, f"Waiting BTC \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}")
-                time.sleep(500)
-            except Exception as e:
-                print("Error from telegramm")
-                time.sleep(10)
+        # if flag_btc:
+        #     try:
+        #         bot.send_message(chat_id_ivan, f"Waiting BTC \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}")
+        #         time.sleep(500)
+        #     except Exception as e:
+        #         print("Error from telegramm")
+        #         time.sleep(10)
                 
         if _date_btc is False:
             try:

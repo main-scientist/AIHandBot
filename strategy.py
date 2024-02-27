@@ -211,7 +211,7 @@ class Strategy():
             "volume": [item[5] for item in a["result"]["list"]],
         })
         columns = ["date", "open", "high", "low", "close"]
-        df = df_sol[columns]
+        df = df[columns]
         df = pd.DataFrame(df, columns=columns)
         df = df.sort_index(ascending=False)
         df = df.reset_index()
