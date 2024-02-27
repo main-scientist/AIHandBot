@@ -44,11 +44,11 @@ def start_message(message):
         report_sol = strategy_sol.strategy()
         report_eth = strategy_eth.strategy()
         
-        if report_btc is not None:
-            wrapper_send_message(chat_id_ivan, json.dumps(report_btc, indent=2, separators=(',', ': ')), 0)
-        
         if report_sol is not None:
             wrapper_send_message(chat_id_ivan, json.dumps(report_sol, indent=2, separators=(',', ': ')), 0)
+        
+        if report_btc is not None:
+            wrapper_send_message(chat_id_ivan, json.dumps(report_btc, indent=2, separators=(',', ': ')), 0)
             
         if report_eth is not None:
             wrapper_send_message(chat_id_ivan, json.dumps(report_eth, indent=2, separators=(',', ': ')), 0)
@@ -139,10 +139,20 @@ def message_reply(message):
     global strategy_sol, strategy_btc, strategy_eth, bot_flag
     
     if message.text=="exchange rate now":
-        rate_now_sol = strategy_sol.get_rate_now()
-        rate_now_btc = strategy_btc.get_rate_now()
-        rate_now_eth = strategy_eth.get_rate_now()
-        content = f"Exchange rate now: \n SOL/USDT: {rate_now_sol} \n BTC/USDT: {rate_now_btc} \n ETH/USDT: {rate_now_eth}"
+        
+        rate_now_sol, un_profit_sol = strategy_sol.get_rate_now()
+        rate_now_btc, un_profit_btc = strategy_btc.get_rate_now()
+        rate_now_eth, un_profit_eth = strategy_eth.get_rate_now()
+        content = {
+            "bank_sol": rate_now_sol,
+            "un_profit_sol": un_profit_sol,
+            "bank_btc": rate_now_btc,
+            "un_profit_btc": un_profit_btc,
+            "bank_eth": rate_now_eth,
+            "un_profit_eth": un_profit_eth,
+        }
+        content = json.dumps(content, indent=2, separators=(',', ': '))
+        
         wrapper_send_message(chat_id_ivan, content, 0)
     
     if message.text=="stop the bot":
@@ -154,6 +164,7 @@ def message_reply(message):
         bank_sol = strategy_sol.bank
         bank_btc = strategy_btc.bank
         bank_eth = strategy_eth.bank
+        
         content = f"bank_sol: {bank_sol} \n bank_btc: {bank_btc} \n bank_eth: {bank_eth}"
         wrapper_send_message(chat_id_ivan, content, 0)
     
