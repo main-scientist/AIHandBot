@@ -38,6 +38,8 @@ class Strategy():
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
+                report = self.get_enter_report(date, pos)
+                return report
 
             # exit from long by signal
             if self.position == 1:
@@ -67,6 +69,8 @@ class Strategy():
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
+                report = self.get_enter_report(date, pos)
+                return report
                 
             # exit from short by signal
             if self.position == -1:
@@ -101,24 +105,17 @@ class Strategy():
         return report
     
     
+    def get_enter_report(self, date, pos):
+        report = {
+            "token": self.TOKEN,
+            "bank": self.bank,
+            "date": date,
+            "enter_price": self.enter_price,
+            "pos": pos
+        }
+        return report
+    
     def get_report(self, date, price_now, pos, new_bank):
-        # bank = 0
-        # if signal == -1:
-        #     v = (self.bank / (self.enter_price / self.leverage))
-        #     fee_open = (self.enter_price * v) * self.fee / 100
-        #     fee_close = (price_now * v) * self.fee / 100
-        #     bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
-        #             + self.bank - fee_open - fee_close
-                    
-        # if signal == 1:
-        #     v = (self.bank / (self.enter_price / self.leverage))
-        #     fee_open = (self.enter_price * v) * self.fee / 100
-        #     fee_close = (price_now * v) * self.fee / 100
-        #     bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
-        #         + self.bank - fee_open - fee_close
-        
-        # un_profit = round(bank - self.bank, 2)
-        # un_percent = round(((price_now - enter_price) / enter_price * 100) if signal == 1 else ((enter_price - price_now) / price_now * 100), 2)
         report = {
             "token": self.TOKEN,
             "date": date,

@@ -15,6 +15,7 @@ bot = telebot.TeleBot("6742853817:AAH4bj8AEi2wdHZjpbm-kUbHbddyI4Qnspw")
 
 strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
 strategy_btc = Strategy(TOKEN="BTCUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
+strategy_eth = Strategy(TOKEN="ETHUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
 bot_flag = True
 
 def wrapper_send_message(chat_id, text, time_sleep):
@@ -33,23 +34,27 @@ def wrapper_send_message(chat_id, text, time_sleep):
 def start_message(message):
     bot.send_message(message.chat.id, 'Start bot')
     
-    global strategy_sol, strategy_btc, bot_flag
+    global strategy_sol, strategy_btc, strategy_eth, bot_flag
     
-    date_sol = 0
-    date_btc = 0
+    # date_sol = 0
+    # date_btc = 0
     
     while bot_flag:
         report_btc = strategy_btc.strategy()
         report_sol = strategy_sol.strategy()
+        report_eth = strategy_eth.strategy()
         
         if report_btc is not None:
             wrapper_send_message(chat_id_ivan, json.dumps(report_btc, indent=2, separators=(',', ': ')), 0)
         
         if report_sol is not None:
             wrapper_send_message(chat_id_ivan, json.dumps(report_sol, indent=2, separators=(',', ': ')), 0)
+            
+        if report_eth is not None:
+            wrapper_send_message(chat_id_ivan, json.dumps(report_eth, indent=2, separators=(',', ': ')), 0)
         
         
-    
+        time.sleep(2)
     
     
     
@@ -131,12 +136,13 @@ def button_message(message):
 
 @bot.message_handler(content_types='text')
 def message_reply(message):
-    global strategy_sol, strategy_btc, bot_flag
+    global strategy_sol, strategy_btc, strategy_eth, bot_flag
     
     if message.text=="exchange rate now":
         rate_now_sol = strategy_sol.get_rate_now()
         rate_now_btc = strategy_btc.get_rate_now()
-        content = f"Exchange rate now: \n SOL/USDT: {rate_now_sol} \n BTC/USDT: {rate_now_btc}"
+        rate_now_eth = strategy_eth.get_rate_now()
+        content = f"Exchange rate now: \n SOL/USDT: {rate_now_sol} \n BTC/USDT: {rate_now_btc} \n ETH/USDT: {rate_now_eth}"
         wrapper_send_message(chat_id_ivan, content, 0)
     
     if message.text=="stop the bot":
@@ -147,7 +153,8 @@ def message_reply(message):
     if message.text=="balance":
         bank_sol = strategy_sol.bank
         bank_btc = strategy_btc.bank
-        content = f"bank_sol: {bank_sol} \n bank_btc: {bank_btc}"
+        bank_eth = strategy_eth.bank
+        content = f"bank_sol: {bank_sol} \n bank_btc: {bank_btc} \n bank_eth: {bank_eth}"
         wrapper_send_message(chat_id_ivan, content, 0)
     
     # if message.text=="exit from SOl":
