@@ -15,6 +15,7 @@ bot = telebot.TeleBot("6742853817:AAH4bj8AEi2wdHZjpbm-kUbHbddyI4Qnspw")
 
 strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
 strategy_btc = Strategy(TOKEN="BTCUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
+bot_flag = True
 
 def wrapper_send_message(chat_id, text, time_sleep):
     flag = False
@@ -25,118 +26,147 @@ def wrapper_send_message(chat_id, text, time_sleep):
             time.sleep(time_sleep)
         except Exception as e:
             print("Error from telegram")
-            time.sleep(2)
+            time.sleep(1)
         
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Start bot')
     
-    global strategy_sol
-    global strategy_btc
+    global strategy_sol, strategy_btc, bot_flag
     
     date_sol = 0
     date_btc = 0
-    while True:
-        report_btc, _date_btc, flag_btc = strategy_btc.strategy()
+    
+    while bot_flag:
+        report_btc = strategy_btc.strategy()
+        report_sol = strategy_sol.strategy()
         
-        # if flag_btc:
-        #     try:
-        #         bot.send_message(chat_id_ivan, f"Waiting BTC \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}")
-        #         time.sleep(500)
-        #     except Exception as e:
-        #         print("Error from telegramm")
-        #         time.sleep(10)
+        if report_btc is not None:
+            wrapper_send_message(chat_id_ivan, json.dumps(report_btc, indent=2, separators=(',', ': ')), 0)
+        
+        if report_sol is not None:
+            wrapper_send_message(chat_id_ivan, json.dumps(report_sol, indent=2, separators=(',', ': ')), 0)
+        
+        
+    
+    
+    
+    
+    # while True:
+    #     report_btc, _date_btc, flag_btc = strategy_btc.strategy()
+        
+    #     # if flag_btc:
+    #     #     try:
+    #     #         bot.send_message(chat_id_ivan, f"Waiting BTC \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}")
+    #     #         time.sleep(500)
+    #     #     except Exception as e:
+    #     #         print("Error from telegramm")
+    #     #         time.sleep(10)
                 
-        if _date_btc is False:
-            try:
-                bot.send_message(chat_id_ivan, "Error from bybit")
-            except Exception as e:
-                print("Error from telegramm")
-                time.sleep(1)
-            print("Error from bybit")
-        else:
-            if date_btc != _date_btc:
-                date_btc = _date_btc
-                try:    
-                    bot.send_message(chat_id_ivan, text=json.dumps(report_btc, indent=2, separators=(',', ': ')))
-                    bot.send_message(chat_id_ivan, text=f"start_bank_BTC: {100} \n now_bank_BTC: {round(report_btc['bank'], 2)} \n profit: {(round(report_btc['bank'], 2) - 100) / 100 * 100}")
-                except Exception as e:
-                    print("Error from telegramm")
-                    time.sleep(1)
+    #     if _date_btc is False:
+    #         try:
+    #             bot.send_message(chat_id_ivan, "Error from bybit")
+    #         except Exception as e:
+    #             print("Error from telegramm")
+    #             time.sleep(1)
+    #         print("Error from bybit")
+    #     else:
+    #         if date_btc != _date_btc:
+    #             date_btc = _date_btc
+    #             try:    
+    #                 bot.send_message(chat_id_ivan, text=json.dumps(report_btc, indent=2, separators=(',', ': ')))
+    #                 bot.send_message(chat_id_ivan, text=f"start_bank_BTC: {100} \n now_bank_BTC: {round(report_btc['bank'], 2)} \n profit: {(round(report_btc['bank'], 2) - 100) / 100 * 100}")
+    #             except Exception as e:
+    #                 print("Error from telegramm")
+    #                 time.sleep(1)
         
         
-        report_sol, _date_sol, flag_sol = strategy_sol.strategy()
+    #     report_sol, _date_sol, flag_sol = strategy_sol.strategy()
         
-        if flag_sol:
-            try:
-                bot.send_message(chat_id_ivan, f"Waiting SOl \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
-                time.sleep(500)
-            except Exception as e:
-                print("Error from telegramm")
-                time.sleep(10)
+    #     if flag_sol:
+    #         try:
+    #             bot.send_message(chat_id_ivan, f"Waiting SOl \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}")
+    #             time.sleep(500)
+    #         except Exception as e:
+    #             print("Error from telegramm")
+    #             time.sleep(10)
                 
-        if _date_sol is False:
-            try:
-                bot.send_message(chat_id_ivan, "Error from bybit")
-            except Exception as e:
-                print("Error from telegramm")
-                time.sleep(1)
-            print("Error from bybit")
-        else:
-            if date_sol != _date_sol:
-                date_sol = _date_sol
-                try:    
-                    bot.send_message(chat_id_ivan, text=json.dumps(report_sol, indent=2, separators=(',', ': ')))
-                    bot.send_message(chat_id_ivan, text=f"start_bank_SOL: {100} \n now_bank_SOL: {round(report_sol['bank'], 2)} \n profit: {(round(report_sol['bank'], 2) - 100) / 100 * 100}")
-                except Exception as e:
-                    print("Error from telegramm")
-                    time.sleep(1)
+    #     if _date_sol is False:
+    #         try:
+    #             bot.send_message(chat_id_ivan, "Error from bybit")
+    #         except Exception as e:
+    #             print("Error from telegramm")
+    #             time.sleep(1)
+    #         print("Error from bybit")
+    #     else:
+    #         if date_sol != _date_sol:
+    #             date_sol = _date_sol
+    #             try:    
+    #                 bot.send_message(chat_id_ivan, text=json.dumps(report_sol, indent=2, separators=(',', ': ')))
+    #                 bot.send_message(chat_id_ivan, text=f"start_bank_SOL: {100} \n now_bank_SOL: {round(report_sol['bank'], 2)} \n profit: {(round(report_sol['bank'], 2) - 100) / 100 * 100}")
+    #             except Exception as e:
+    #                 print("Error from telegramm")
+    #                 time.sleep(1)
                     
-        time.sleep(10)
+    #     time.sleep(10)
     
     
         
 @bot.message_handler(commands=['button'])
 def button_message(message):
     markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1=types.KeyboardButton("exit from SOl")
-    item2=types.KeyboardButton("exit from BTC")
-    item3=types.KeyboardButton("rate now")
-    markup.add(item1)
-    markup.add(item2)
+    # item1=types.KeyboardButton("exit from SOl")
+    # item2=types.KeyboardButton("exit from BTC")
+    item3=types.KeyboardButton("exchange rate now")
+    item4=types.KeyboardButton("stop the bot")
+    item5=types.KeyboardButton("balance")
+    # markup.add(item1)
+    # markup.add(item2)
     markup.add(item3)
+    markup.add(item4)
+    markup.add(item5)
     bot.send_message(chat_id_ivan, text="choise action:", reply_markup=markup)
  
 
 @bot.message_handler(content_types='text')
 def message_reply(message):
-    global strategy_sol
-    global strategy_btc
+    global strategy_sol, strategy_btc, bot_flag
     
-    if message.text=="rate now":
+    if message.text=="exchange rate now":
         rate_now_sol = strategy_sol.get_rate_now()
         rate_now_btc = strategy_btc.get_rate_now()
-        content = f"Rate now: \n SOL/USDT: {rate_now_sol} \n BTC/USDT: {rate_now_btc}"
+        content = f"Exchange rate now: \n SOL/USDT: {rate_now_sol} \n BTC/USDT: {rate_now_btc}"
         wrapper_send_message(chat_id_ivan, content, 0)
     
-    if message.text=="exit from SOl":
-        try:
-            enter_price, price_now = strategy_sol.exit_from_position()
-        except Exception as e:
-            print("Error from bybit")
-            time.sleep(1)
-        content = f"Exited from SOL \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}"
+    if message.text=="stop the bot":
+        bot_flag = False
+        content = "bot was stopped"
         wrapper_send_message(chat_id_ivan, content, 0)
+    
+    if message.text=="balance":
+        bank_sol = strategy_sol.bank
+        bank_btc = strategy_btc.bank
+        content = f"bank_sol: {bank_sol} \n bank_btc: {bank_btc}"
+        wrapper_send_message(chat_id_ivan, content, 0)
+    
+    # if message.text=="exit from SOl":
+    #     try:
+    #         enter_price, price_now = strategy_sol.exit_from_position()
+    #     except Exception as e:
+    #         print("Error from bybit")
+    #         time.sleep(1)
+    #     content = f"Exited from SOL \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}"
+    #     wrapper_send_message(chat_id_ivan, content, 0)
 
-    if message.text=="exit from BTC":
-        try:
-            enter_price, price_now = strategy_btc.exit_from_position()
-        except Exception as e:
-            print("Error from bybit")
-            time.sleep(1)
-        content = f"Exited from BTC \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}"
-        wrapper_send_message(chat_id_ivan, content, 0)
+    # if message.text=="exit from BTC":
+    #     try:
+    #         enter_price, price_now = strategy_btc.exit_from_position()
+    #     except Exception as e:
+    #         print("Error from bybit")
+    #         time.sleep(1)
+    #     content = f"Exited from BTC \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}"
+    #     wrapper_send_message(chat_id_ivan, content, 0)
 
  
  

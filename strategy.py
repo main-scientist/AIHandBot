@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from advanced_ta import LorentzianClassification
 import json
+import time
 
 class Strategy():
     def __init__(self, TOKEN, timeline, bank, leverage, fee, position):
@@ -18,15 +19,12 @@ class Strategy():
     def strategy(self):
         df, df_lc  = self.get_data_from_bybit()
         
-        if isinstance(df, str):
-            return df, False, False
-        
-        _date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
+        date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
         price_now = pd.to_numeric(df.tail(1)["close"].item())
         signal = pd.to_numeric(df_lc.tail(1)["signal"].item())
         
         if signal == self.pred_position:
-            return df, _date, True
+            return None
         
         if signal == self.position:
             pos = "hold long" if signal == 1 else "hold short"
@@ -38,10 +36,10 @@ class Strategy():
         # short
         if signal == -1:
             if self.position == 0:
-                self.position = -1
+                self.position = signal
                 self.enter_price = price_now
-        
-            # exit from long
+
+            # exit from long by signal
             if self.position == 1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
@@ -49,78 +47,110 @@ class Strategy():
                 bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
                     + self.bank - fee_open - fee_close
                 self.enter_price = price_now
-                self.bank = bank
+                # self.bank = bank
+                self.position = signal
+                self.pred_position = 1
+            
+            # exit from long by take profit
+            if (((price_now  - self.enter_price) / self.enter_price * 100) > 0.35) and self.pred_position != 1:
+                v = (self.bank / (self.enter_price / self.leverage))
+                fee_open = (self.enter_price * v) * self.fee / 100
+                fee_close = (price_now * v) * self.fee / 100
+                bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
+                    + self.bank - fee_open - fee_close
+                # self.bank = bank
+                self.position = 0
                 self.pred_position = 1
         
         # long    
         if signal == 1:
             if self.position == 0:
-                self.position = 1
+                self.position = signal
                 self.enter_price = price_now
                 
-            # exit from short
+            # exit from short by signal
             if self.position == -1:
+                if ((self.enter_price  - price_now) / price_now * 100) > 0.35:
+                    v = (self.bank / (self.enter_price / self.leverage))
+                    fee_open = (self.enter_price * v) * self.fee / 100
+                    fee_close = (price_now * v) * self.fee / 100
+                    bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
+                        + self.bank - fee_open - fee_close
+                    self.enter_price = price_now
+                    # self.bank = bank
+                    self.position = signal
+                    self.pred_position = -1
+                    
+            # exit form short by take profit
+            if (((self.enter_price - price_now) / price_now * 100) > 0.35) and self.pred_position != -1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
                 bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
-                    + self.bank - fee_open - fee_close
-                self.enter_price = price_now
-                self.bank = bank
+                        + self.bank - fee_open - fee_close
+                # self.bank = bank
+                self.position = 0
                 self.pred_position = -1
+                
+        if self.bank == bank:
+            return None
         
-        self.position = signal
-        
-        report = self.get_report(_date, self.enter_price, price_now, pos, signal)
-        return report, _date, False
+        report = self.get_report(date, price_now, pos, bank)
+        self.bank = bank
+            
+        return report
     
     
-    def get_report(self, _date, enter_price, price_now, pos, signal):
-        print(self.bank, self.enter_price)
-        bank = 0
-        if signal == -1:
-            v = (self.bank / (self.enter_price / self.leverage))
-            fee_open = (self.enter_price * v) * self.fee / 100
-            fee_close = (price_now * v) * self.fee / 100
-            bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
-                    + self.bank - fee_open - fee_close
+    def get_report(self, date, price_now, pos, new_bank):
+        # bank = 0
+        # if signal == -1:
+        #     v = (self.bank / (self.enter_price / self.leverage))
+        #     fee_open = (self.enter_price * v) * self.fee / 100
+        #     fee_close = (price_now * v) * self.fee / 100
+        #     bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
+        #             + self.bank - fee_open - fee_close
                     
-        if signal == 1:
-            v = (self.bank / (self.enter_price / self.leverage))
-            fee_open = (self.enter_price * v) * self.fee / 100
-            fee_close = (price_now * v) * self.fee / 100
-            bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
-                + self.bank - fee_open - fee_close
+        # if signal == 1:
+        #     v = (self.bank / (self.enter_price / self.leverage))
+        #     fee_open = (self.enter_price * v) * self.fee / 100
+        #     fee_close = (price_now * v) * self.fee / 100
+        #     bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
+        #         + self.bank - fee_open - fee_close
         
-        un_profit = round(bank - self.bank, 2)
-        un_percent = round(((price_now - enter_price) / enter_price * 100) if signal == 1 else ((enter_price - price_now) / price_now * 100), 2)
+        # un_profit = round(bank - self.bank, 2)
+        # un_percent = round(((price_now - enter_price) / enter_price * 100) if signal == 1 else ((enter_price - price_now) / price_now * 100), 2)
         report = {
             "token": self.TOKEN,
-            "date": _date,
-            "bank": self.bank,
-            "position": pos,
-            "enter_price": enter_price,
-            "price_now": price_now,
-            "un_profit": un_profit,
-            "un_percent": un_percent
+            "date": date,
+            "enter_price": self.enter_price,
+            "exit_price": price_now,
+            "old_bank": self.bank,
+            "new_bank": new_bank,
+            "percent": ((new_bank - self.bank) / self.bank * 100),
+            "pred_position": self.pred_position,
+            "new_position": pos,
         }
         return report
         
     
-    def get_data_from_bybit(self):    
-        try:
-            session = HTTP()
-            a = session.get_kline(
-                category="linear",
-                symbol=self.TOKEN,
-                interval=self.timeline,
-                # start=start_timestamp,
-                # end=end_timestamp,
-                limit=1000
-            )
-        except Exception as e:
-            return "Custom except: error load data from api bybit", "Error"
-        
+    def get_data_from_bybit(self):
+        flag = True
+        while flag:   
+            try:
+                session = HTTP()
+                a = session.get_kline(
+                    category="linear",
+                    symbol=self.TOKEN,
+                    interval=self.timeline,
+                    # start=start_timestamp,
+                    # end=end_timestamp,
+                    limit=1000
+                )
+                flag = False
+            except Exception as e:
+                print("Error pybit")
+            time.sleep(1)
+            
         timestamps_milliseconds = [item[0] for item in a["result"]["list"]]
         timestamps_numeric = pd.to_numeric(timestamps_milliseconds)
         df_sol = pd.DataFrame({
@@ -153,38 +183,38 @@ class Strategy():
         return df, df_lc
     
     
-    def exit_from_position(self):
-        df, df_lc  = self.get_data_from_bybit()
+    # def exit_from_position(self):
+    #     df, df_lc  = self.get_data_from_bybit()
         
-        self.date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
-        enter_price = self.enter_price
-        price_now = pd.to_numeric(df.tail(1)["close"].item())
+    #     self.date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
+    #     enter_price = self.enter_price
+    #     price_now = pd.to_numeric(df.tail(1)["close"].item())
         
-        # exit from long
-        if self.position == 1:
-            v = (self.bank / (self.enter_price / self.leverage))
-            fee_open = (self.enter_price * v) * self.fee / 100
-            fee_close = (price_now * v) * self.fee / 100
-            bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
-                + self.bank - fee_open - fee_close
-            self.enter_price = 0
-            self.bank = bank
-            self.position = 0
-            self.pred_position = 1
+    #     # exit from long
+    #     if self.position == 1:
+    #         v = (self.bank / (self.enter_price / self.leverage))
+    #         fee_open = (self.enter_price * v) * self.fee / 100
+    #         fee_close = (price_now * v) * self.fee / 100
+    #         bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
+    #             + self.bank - fee_open - fee_close
+    #         self.enter_price = 0
+    #         self.bank = bank
+    #         self.position = 0
+    #         self.pred_position = 1
             
-         # exit from short
-        if self.position == -1:
-            v = (self.bank / (self.enter_price / self.leverage))
-            fee_open = (self.enter_price * v) * self.fee / 100
-            fee_close = (price_now * v) * self.fee / 100
-            bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
-                + self.bank - fee_open - fee_close
-            self.enter_price = 0
-            self.bank = bank
-            self.position = 0
-            self.pred_position = -1
+    #      # exit from short
+    #     if self.position == -1:
+    #         v = (self.bank / (self.enter_price / self.leverage))
+    #         fee_open = (self.enter_price * v) * self.fee / 100
+    #         fee_close = (price_now * v) * self.fee / 100
+    #         bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
+    #             + self.bank - fee_open - fee_close
+    #         self.enter_price = 0
+    #         self.bank = bank
+    #         self.position = 0
+    #         self.pred_position = -1
             
-        return enter_price, price_now
+    #     return enter_price, price_now
     
     
     def get_rate_now(self):
