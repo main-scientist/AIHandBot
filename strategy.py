@@ -58,7 +58,9 @@ class Strategy():
             # print(f"self.price_now: {price_now}")
             # print(((price_now  - self.enter_price) / self.enter_price * 100))
             # exit from long by take profit
-            if (((price_now  - self.enter_price) / self.enter_price * 100) > 0.35) and self.pred_position != 1:
+            if ((price_now  - self.enter_price) / self.enter_price * 100) > 0.35:
+                print("hello short")
+            if ((price_now  - self.enter_price) / self.enter_price * 100) > 0.35 and self.pred_position != 1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
@@ -78,7 +80,6 @@ class Strategy():
                 
             # exit from short by signal
             if self.position == -1:
-                if ((self.enter_price  - price_now) / price_now * 100) > 0.35:
                     v = (self.bank / (self.enter_price / self.leverage))
                     fee_open = (self.enter_price * v) * self.fee / 100
                     fee_close = (price_now * v) * self.fee / 100
@@ -93,7 +94,9 @@ class Strategy():
             # print(f"self.enter_price: {self.enter_price}")
             # print(f"self.price_now: {price_now}")
             # print(((self.enter_price - price_now) / price_now * 100))
-            if (((self.enter_price - price_now) / price_now * 100) > 0.35) and self.pred_position != -1:
+            if ((self.enter_price - price_now) / price_now * 100) > 0.35:
+                print("hello long")
+            if ((self.enter_price - price_now) / price_now * 100) > 0.35 and self.pred_position != -1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
@@ -102,6 +105,9 @@ class Strategy():
                 # self.bank = bank
                 self.position = 0
                 self.pred_position = -1
+                
+        print(f"self.bank: {self.bank}")
+        print(f"bank: {bank}")
                 
         if self.bank == bank:
             return None

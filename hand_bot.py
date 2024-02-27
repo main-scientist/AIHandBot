@@ -161,11 +161,7 @@ def message_reply(message):
         wrapper_send_message(chat_id_ivan, content, 0)
     
     if message.text=="balance":
-        bank_sol = strategy_sol.bank
-        bank_btc = strategy_btc.bank
-        bank_eth = strategy_eth.bank
-        
-        content = f"bank_sol: {bank_sol} \n bank_btc: {bank_btc} \n bank_eth: {bank_eth}"
+        content = f"bank_sol: {strategy_sol.bank} \n bank_btc: {strategy_btc.bank} \n bank_eth: {strategy_eth.bank}"
         wrapper_send_message(chat_id_ivan, content, 0)
     
     # if message.text=="exit from SOl":
