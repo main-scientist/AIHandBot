@@ -58,7 +58,7 @@ class Strategy():
             
             # exit from short by take profit
             # print(f"short: {self.TOKEN}: {((self.enter_price  - price_now) / price_now * 100)}")
-            if ((self.enter_price  - price_now) / price_now * 100) > 0.1 and self.pred_position != 1:
+            if ((self.enter_price  - price_now) / price_now * 100) > 0.35 and self.pred_position != 1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
@@ -90,7 +90,7 @@ class Strategy():
                     
             # exit form long by take profit
             # print(f"long: {self.TOKEN}: {((price_now  - self.enter_price) / self.enter_price * 100)}")
-            if ((price_now - self.enter_price) / self.enter_price * 100) > 0.1 and self.pred_position != -1:
+            if ((price_now - self.enter_price) / self.enter_price * 100) > 0.35 and self.pred_position != -1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
