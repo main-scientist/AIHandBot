@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from advanced_ta import LorentzianClassification
 import json
+from datetime import datetime
 import time
 
 class Strategy():
@@ -19,10 +20,11 @@ class Strategy():
     def strategy(self):
         df, df_lc  = self.get_data_from_bybit()
         
-        date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
+        # date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         price_now = pd.to_numeric(df.tail(1)["close"].item())
         signal = pd.to_numeric(df_lc.tail(1)["signal"].item())
-        bank = 0
+        bank = self.bank
         
         if signal == self.pred_position:
             return None
@@ -50,25 +52,21 @@ class Strategy():
                 bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
                     + self.bank - fee_open - fee_close
                 self.enter_price = price_now
-                # self.bank = bank
                 self.position = signal
                 self.pred_position = 1
             
-            # print(f"self.enter_price: {self.enter_price}")
-            # print(f"self.price_now: {price_now}")
-            # print(((price_now  - self.enter_price) / self.enter_price * 100))
-            # exit from long by take profit
-            if ((price_now  - self.enter_price) / self.enter_price * 100) > 0.35:
-                print("hello short")
-            if ((price_now  - self.enter_price) / self.enter_price * 100) > 0.35 and self.pred_position != 1:
+            
+            # exit from short by take profit
+            # print(f"short: {self.TOKEN}: {((self.enter_price  - price_now) / price_now * 100)}")
+            if ((self.enter_price  - price_now) / price_now * 100) > 0.1 and self.pred_position != 1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
-                bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
+                bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage))  \
                     + self.bank - fee_open - fee_close
-                # self.bank = bank
                 self.position = 0
-                self.pred_position = 1
+                self.pred_position = -1
+                pos = "exit from short"
         
         # long    
         if signal == 1:
@@ -90,24 +88,20 @@ class Strategy():
                     self.position = signal
                     self.pred_position = -1
                     
-            # exit form short by take profit
-            # print(f"self.enter_price: {self.enter_price}")
-            # print(f"self.price_now: {price_now}")
-            # print(((self.enter_price - price_now) / price_now * 100))
-            if ((self.enter_price - price_now) / price_now * 100) > 0.35:
-                print("hello long")
-            if ((self.enter_price - price_now) / price_now * 100) > 0.35 and self.pred_position != -1:
+            # exit form long by take profit
+            # print(f"long: {self.TOKEN}: {((price_now  - self.enter_price) / self.enter_price * 100)}")
+            if ((price_now - self.enter_price) / self.enter_price * 100) > 0.1 and self.pred_position != -1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
-                bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
+                bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage)) \
                         + self.bank - fee_open - fee_close
-                # self.bank = bank
                 self.position = 0
-                self.pred_position = -1
+                self.pred_position = 1
+                pos = "exit from long"
                 
-        print(f"self.bank: {self.bank}")
-        print(f"bank: {bank}")
+        # print(f"self.bank: {self.bank}")
+        # print(f"bank: {bank}")
                 
         if self.bank == bank:
             return None
@@ -121,7 +115,7 @@ class Strategy():
     def get_enter_report(self, date, pos):
         report = {
             "token": self.TOKEN,
-            "bank": self.bank,
+            "bank": round(self.bank, 3),
             "date": date,
             "enter_price": self.enter_price,
             "pos": pos
@@ -134,9 +128,9 @@ class Strategy():
             "date": date,
             "enter_price": self.enter_price,
             "exit_price": price_now,
-            "old_bank": self.bank,
-            "new_bank": new_bank,
-            "percent": ((new_bank - self.bank) / self.bank * 100),
+            "old_bank": round(self.bank, 3),
+            "new_bank": round(new_bank, 3),
+            "percent": round(((new_bank - self.bank) / self.bank * 100), 3),
             "pred_position": self.pred_position,
             "new_position": pos,
         }
