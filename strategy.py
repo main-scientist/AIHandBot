@@ -259,7 +259,9 @@ class Strategy():
         
         if self.position == 1:
             un_profit = round(((price_now - self.enter_price) / self.enter_price * 100), 2)
-        elif self.position == -1:
+        if self.position == -1:
             un_profit = round(((self.enter_price - price_now) / price_now * 100), 2)
+        if self.position == 0:
+            un_profit = "out of position"
         
         return price_now, un_profit
