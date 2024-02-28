@@ -32,12 +32,14 @@ def wrapper_send_message(chat_id, text, time_sleep):
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'Start bot')
+    
+    # if message.chat.id != chat_id_ivan:
+    #     bot.send_message(message.chat.id, "Unauthorized")
+    #     bot.stop_polling()
+    
+    bot.send_message(message.chat.id, "Start bot")
     
     global strategy_sol, strategy_btc, strategy_eth, bot_flag
-    
-    # date_sol = 0
-    # date_btc = 0
     
     while bot_flag:
         report_btc = strategy_btc.strategy()
@@ -60,11 +62,13 @@ def start_message(message):
 def button_message(message):
     markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1=types.KeyboardButton("exchange rate now")
-    item2=types.KeyboardButton("stop the bot")
+    item2=types.KeyboardButton("summary")
     item3=types.KeyboardButton("balance")
+    item4=types.KeyboardButton("stop the bot")
     markup.add(item1)
     markup.add(item2)
     markup.add(item3)
+    markup.add(item4)
     bot.send_message(chat_id_ivan, text="choise action:", reply_markup=markup)
  
 
@@ -78,16 +82,22 @@ def message_reply(message):
         rate_now_btc, un_profit_btc = strategy_btc.get_rate_now()
         rate_now_eth, un_profit_eth = strategy_eth.get_rate_now()
         content = {
-            "bank_sol": rate_now_sol,
+            "rate_now_sol": rate_now_sol,
             "un_profit_sol": un_profit_sol,
-            "bank_btc": rate_now_btc,
+            "rate_now_btc": rate_now_btc,
             "un_profit_btc": un_profit_btc,
-            "bank_eth": rate_now_eth,
+            "rate_now_eth": rate_now_eth,
             "un_profit_eth": un_profit_eth,
         }
         content = json.dumps(content, indent=2, separators=(',', ': '))
         
         wrapper_send_message(chat_id_ivan, content, 0)
+        
+    if message.text=="summary":
+        for obj in [strategy_sol, strategy_btc, strategy_eth]:
+            content = obj.get_summary()
+            content = json.dumps(content, indent=2, separators=(',', ': '))
+            wrapper_send_message(chat_id_ivan, content, 0)
     
     if message.text=="stop the bot":
         bot_flag = False
@@ -102,27 +112,6 @@ def message_reply(message):
         }
         content = json.dumps(content, indent=2, separators=(',', ': '))
         wrapper_send_message(chat_id_ivan, content, 0)
-    
-    # if message.text=="exit from SOl":
-    #     try:
-    #         enter_price, price_now = strategy_sol.exit_from_position()
-    #     except Exception as e:
-    #         print("Error from bybit")
-    #         time.sleep(1)
-    #     content = f"Exited from SOL \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_sol.bank, 2)} \n pred_position: {strategy_sol.pred_position}"
-    #     wrapper_send_message(chat_id_ivan, content, 0)
-
-    # if message.text=="exit from BTC":
-    #     try:
-    #         enter_price, price_now = strategy_btc.exit_from_position()
-    #     except Exception as e:
-    #         print("Error from bybit")
-    #         time.sleep(1)
-    #     content = f"Exited from BTC \n enter_price: {round(enter_price, 2)} \n exit_price: {round(price_now, 2)} \n bank: {round(strategy_btc.bank, 2)} \n pred_position: {strategy_btc.pred_position}"
-    #     wrapper_send_message(chat_id_ivan, content, 0)
-
- 
- 
  
  
 bot.infinity_polling()

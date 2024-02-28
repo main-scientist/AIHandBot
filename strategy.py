@@ -118,7 +118,8 @@ class Strategy():
             "bank": round(self.bank, 3),
             "date": date,
             "enter_price": self.enter_price,
-            "pos": pos
+            "pos": pos,
+            "pred_position": self.pred_position
         }
         return report
     
@@ -219,6 +220,20 @@ class Strategy():
     #         self.pred_position = -1
             
     #     return enter_price, price_now
+    
+    
+    
+    def get_summary(self):
+        report = {
+            "token": self.TOKEN,
+            "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "enter_price": self.enter_price,
+            "bank": round(self.bank, 3),
+            "position": self.position,
+            "pred_position": self.pred_position,
+        }
+        return report
+    
     
     
     def get_rate_now(self):
