@@ -47,13 +47,16 @@ def start_message(message):
         report_eth = strategy_eth.strategy()
         
         if report_sol is not None:
-            wrapper_send_message(chat_id_ivan, json.dumps(report_sol, indent=2, separators=(',', ': ')), 0)
+            for report in report_sol:
+                wrapper_send_message(chat_id_ivan, json.dumps(report, indent=2, separators=(',', ': ')), 0)
         
         if report_btc is not None:
-            wrapper_send_message(chat_id_ivan, json.dumps(report_btc, indent=2, separators=(',', ': ')), 0)
+            for report in report_btc:
+                wrapper_send_message(chat_id_ivan, json.dumps(report, indent=2, separators=(',', ': ')), 0)
             
         if report_eth is not None:
-            wrapper_send_message(chat_id_ivan, json.dumps(report_eth, indent=2, separators=(',', ': ')), 0)
+            for report in report_eth:
+                wrapper_send_message(chat_id_ivan, json.dumps(report, indent=2, separators=(',', ': ')), 0)
                 
         time.sleep(2)
 

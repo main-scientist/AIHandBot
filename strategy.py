@@ -26,57 +26,63 @@ class Strategy():
         signal = pd.to_numeric(df_lc.tail(1)["signal"].item())
         bank = self.bank
         
-        if signal == self.pred_position:
-            return None
-        
-        if signal == self.position:
-            pos = "hold long" if signal == 1 else "hold short"
-        if (signal != self.position) and signal == -1:
-            pos = "short"
-        if (signal != self.position) and signal == 1:
-            pos = "long"
+        # if signal == self.position:
+        #     pos = "hold long" if signal == 1 else "hold short"
+        # if (signal != self.position) and signal == -1:
+        #     pos = "short"
+        # if (signal != self.position) and signal == 1:
+        #     pos = "long"
         
         # short
         if signal == -1:
-            flag = True
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
-                report = self.get_enter_report(date, pos)
-                return report
+                pos = "short"
+                enter_report = self.get_enter_report(date, pos)
+                return [enter_report]
 
-            # exit from long by signal
+            # exit from long and enter to short by signal
             if self.position == 1:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
                 bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
-                    + self.bank - fee_open - fee_close
-                self.enter_price = price_now
+                    + self.bank - fee_open - fee_close    
+                
+                self.pred_position = 1        
                 self.position = signal
-                self.pred_position = 1
-                flag = False
+                exit_report = self.get_exit_report(date, price_now, bank)
+        
+                self.bank = bank
+                pos = "short"
+                self.enter_price = price_now
+                enter_report = self.get_enter_report(date, pos)
+                return [exit_report, enter_report]
             
             # exit from short by take profit
-            if ((self.enter_price  - price_now) / price_now * 100) >= 0.35 and flag:
+            if ((self.enter_price  - price_now) / price_now * 100) >= 0.35:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
                 bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage))  \
                     + self.bank - fee_open - fee_close
-                self.position = 0
+                
                 self.pred_position = -1
-                pos = "exit from short"
+                exit_report = self.get_exit_report(date, price_now, bank)
+                self.bank = bank
+                self.position = 0
+                return [exit_report]
         
         
         # long    
         if signal == 1:
-            flag = True
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
-                report = self.get_enter_report(date, pos)
-                return report
+                pos = "long"
+                enter_report = self.get_enter_report(date, pos)
+                return [enter_report]
                 
             # exit from short by signal
             if self.position == -1:
@@ -85,56 +91,138 @@ class Strategy():
                     fee_close = (price_now * v) * self.fee / 100
                     bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
                         + self.bank - fee_open - fee_close
-                    self.enter_price = price_now
-                    self.position = signal
+                          
                     self.pred_position = -1
-                    flag = False
+                    self.position = signal
+                    exit_report = self.get_exit_report(date, price_now, bank)
+            
+                    self.bank = bank
+                    pos = "long"
+                    self.enter_price = price_now
+                    enter_report = self.get_enter_report(date, pos)
+                    return [exit_report, enter_report]
                     
             # exit form long by take profit
-            if ((price_now - self.enter_price) / self.enter_price * 100) >= 0.35 and flag:
+            if ((price_now - self.enter_price) / self.enter_price * 100) >= 0.35:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
                 bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage)) \
                         + self.bank - fee_open - fee_close
-                self.position = 0
                 self.pred_position = 1
-                pos = "exit from long"
+                exit_report = self.get_exit_report(date, price_now, bank)
+                self.bank = bank
+                self.position = 0
+                return [exit_report]
                 
-        if self.bank == bank:
-            return None
+                
+                
+        # if self.bank == bank:
+        #     return None
         
-        report = self.get_report(date, price_now, pos, bank)
-        self.bank = bank
+        # report = self.get_report(date, price_now, pos, bank)
+        # self.bank = bank
             
-        return report
+        return None
     
     
     def get_enter_report(self, date, pos):
         report = {
             "token": self.TOKEN,
-            "bank": round(self.bank, 3),
             "date": date,
+            "message": f"enter to {pos}",
             "enter_price": self.enter_price,
             "pos": pos,
             "pred_position": self.pred_position
         }
         return report
     
-    def get_report(self, date, price_now, pos, new_bank):
+    def get_exit_report(self, date, price_now, new_bank):
         report = {
             "token": self.TOKEN,
             "date": date,
+            "message": f"exit from {"short" if self.pred_position == -1 else "long"}",
             "enter_price": self.enter_price,
             "exit_price": price_now,
             "old_bank": round(self.bank, 3),
             "new_bank": round(new_bank, 3),
             "percent": round(((new_bank - self.bank) / self.bank * 100), 3),
             "pred_position": self.pred_position,
-            "new_position": pos,
         }
         return report
+    
+    # def get_report(self, date, price_now, pos, new_bank):
+    #     report = {
+    #         "token": self.TOKEN,
+    #         "date": date,
+    #         "enter_price": self.enter_price,
+    #         "exit_price": price_now,
+    #         "old_bank": round(self.bank, 3),
+    #         "new_bank": round(new_bank, 3),
+    #         "percent": round(((new_bank - self.bank) / self.bank * 100), 3),
+    #         "pred_position": self.pred_position,
+    #         "new_position": pos,
+    #     }
+    #     return report
+    
+    
+    def get_summary(self):
+        report = {
+            "token": self.TOKEN,
+            "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "enter_price": self.enter_price,
+            "bank": round(self.bank, 3),
+            "position": self.position,
+            "pred_position": self.pred_position,
+        }
+        return report
+    
+    
+    def get_rate_now(self):
+        try:
+            session = HTTP()
+            a = session.get_kline(
+                category="linear",
+                symbol=self.TOKEN,
+                interval=self.timeline,
+                limit=1
+            )
+        except Exception as e:
+            return "Custom except: error load data from api bybit", "Error"
+        columns = ["date", "open", "high", "low", "close"]
         
+        timestamps_milliseconds = [item[0] for item in a["result"]["list"]]
+        timestamps_numeric = pd.to_numeric(timestamps_milliseconds)
+        df = pd.DataFrame({
+            "date": pd.to_datetime(timestamps_numeric, unit='ms', origin='unix'),
+            "open": [item[1] for item in a["result"]["list"]],
+            "high": [item[2] for item in a["result"]["list"]],
+            "low": [item[3] for item in a["result"]["list"]],
+            "close": [item[4] for item in a["result"]["list"]],
+            "volume": [item[5] for item in a["result"]["list"]],
+        })
+        columns = ["date", "open", "high", "low", "close"]
+        df = df[columns]
+        df = pd.DataFrame(df, columns=columns)
+        df = df.sort_index(ascending=False)
+        df = df.reset_index()
+        df = df.drop(["index"], axis=1)
+        df["open"] = pd.to_numeric(df["open"])
+        df["high"] = pd.to_numeric(df["high"])
+        df["low"] = pd.to_numeric(df["low"])
+        df["close"] = pd.to_numeric(df["close"])
+        
+        price_now = df["close"].item()
+        
+        if self.position == 1:
+            un_profit = round(((price_now - self.enter_price) / self.enter_price * 100), 2)
+        if self.position == -1:
+            un_profit = round(((self.enter_price - price_now) / price_now * 100), 2)
+        if self.position == 0:
+            un_profit = "out of position"
+        
+        return price_now, un_profit
+    
     
     def get_data_from_bybit(self):
         flag = True
@@ -184,97 +272,3 @@ class Strategy():
         df_lc["date"] = date
         
         return df, df_lc
-    
-    
-    # def exit_from_position(self):
-    #     df, df_lc  = self.get_data_from_bybit()
-        
-    #     self.date = df.tail(1)['date'].dt.strftime('%Y-%m-%d %H:%M:%S').item()
-    #     enter_price = self.enter_price
-    #     price_now = pd.to_numeric(df.tail(1)["close"].item())
-        
-    #     # exit from long
-    #     if self.position == 1:
-    #         v = (self.bank / (self.enter_price / self.leverage))
-    #         fee_open = (self.enter_price * v) * self.fee / 100
-    #         fee_close = (price_now * v) * self.fee / 100
-    #         bank = price_now * (self.bank / (self.enter_price / self.leverage)) - self.enter_price * (self.bank / (self.enter_price / self.leverage))  \
-    #             + self.bank - fee_open - fee_close
-    #         self.enter_price = 0
-    #         self.bank = bank
-    #         self.position = 0
-    #         self.pred_position = 1
-            
-    #      # exit from short
-    #     if self.position == -1:
-    #         v = (self.bank / (self.enter_price / self.leverage))
-    #         fee_open = (self.enter_price * v) * self.fee / 100
-    #         fee_close = (price_now * v) * self.fee / 100
-    #         bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
-    #             + self.bank - fee_open - fee_close
-    #         self.enter_price = 0
-    #         self.bank = bank
-    #         self.position = 0
-    #         self.pred_position = -1
-            
-    #     return enter_price, price_now
-    
-    
-    
-    def get_summary(self):
-        report = {
-            "token": self.TOKEN,
-            "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            "enter_price": self.enter_price,
-            "bank": round(self.bank, 3),
-            "position": self.position,
-            "pred_position": self.pred_position,
-        }
-        return report
-    
-    
-    
-    def get_rate_now(self):
-        try:
-            session = HTTP()
-            a = session.get_kline(
-                category="linear",
-                symbol=self.TOKEN,
-                interval=self.timeline,
-                limit=1
-            )
-        except Exception as e:
-            return "Custom except: error load data from api bybit", "Error"
-        columns = ["date", "open", "high", "low", "close"]
-        
-        timestamps_milliseconds = [item[0] for item in a["result"]["list"]]
-        timestamps_numeric = pd.to_numeric(timestamps_milliseconds)
-        df = pd.DataFrame({
-            "date": pd.to_datetime(timestamps_numeric, unit='ms', origin='unix'),
-            "open": [item[1] for item in a["result"]["list"]],
-            "high": [item[2] for item in a["result"]["list"]],
-            "low": [item[3] for item in a["result"]["list"]],
-            "close": [item[4] for item in a["result"]["list"]],
-            "volume": [item[5] for item in a["result"]["list"]],
-        })
-        columns = ["date", "open", "high", "low", "close"]
-        df = df[columns]
-        df = pd.DataFrame(df, columns=columns)
-        df = df.sort_index(ascending=False)
-        df = df.reset_index()
-        df = df.drop(["index"], axis=1)
-        df["open"] = pd.to_numeric(df["open"])
-        df["high"] = pd.to_numeric(df["high"])
-        df["low"] = pd.to_numeric(df["low"])
-        df["close"] = pd.to_numeric(df["close"])
-        
-        price_now = df["close"].item()
-        
-        if self.position == 1:
-            un_profit = round(((price_now - self.enter_price) / self.enter_price * 100), 2)
-        if self.position == -1:
-            un_profit = round(((self.enter_price - price_now) / price_now * 100), 2)
-        if self.position == 0:
-            un_profit = "out of position"
-        
-        return price_now, un_profit
