@@ -38,7 +38,7 @@ class Strategy():
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
-                pos = "short"
+                pos = 'short'
                 enter_report = self.get_enter_report(date, pos)
                 return [enter_report]
 
@@ -55,7 +55,7 @@ class Strategy():
                 exit_report = self.get_exit_report(date, price_now, bank)
         
                 self.bank = bank
-                pos = "short"
+                pos = 'short'
                 self.enter_price = price_now
                 enter_report = self.get_enter_report(date, pos)
                 return [exit_report, enter_report]
@@ -80,7 +80,7 @@ class Strategy():
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
-                pos = "long"
+                pos = 'long'
                 enter_report = self.get_enter_report(date, pos)
                 return [enter_report]
                 
@@ -97,7 +97,7 @@ class Strategy():
                     exit_report = self.get_exit_report(date, price_now, bank)
             
                     self.bank = bank
-                    pos = "long"
+                    pos = 'long'
                     self.enter_price = price_now
                     enter_report = self.get_enter_report(date, pos)
                     return [exit_report, enter_report]
@@ -141,7 +141,7 @@ class Strategy():
         report = {
             "token": self.TOKEN,
             "date": date,
-            "message": f"exit from {"short" if self.pred_position == -1 else "long"}",
+            "message": f"exit from {'short' if self.pred_position == -1 else 'long'}",
             "enter_price": self.enter_price,
             "exit_price": price_now,
             "old_bank": round(self.bank, 3),
