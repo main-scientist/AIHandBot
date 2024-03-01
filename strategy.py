@@ -38,6 +38,7 @@ class Strategy():
         
         # short
         if signal == -1:
+            flag = True
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
@@ -54,11 +55,10 @@ class Strategy():
                 self.enter_price = price_now
                 self.position = signal
                 self.pred_position = 1
-            
+                flag = False
             
             # exit from short by take profit
-            # print(f"short: {self.TOKEN}: {((self.enter_price  - price_now) / price_now * 100)}")
-            if ((self.enter_price  - price_now) / price_now * 100) > 0.35 and self.pred_position != 1:
+            if ((self.enter_price  - price_now) / price_now * 100) >= 0.35 and flag:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
@@ -68,8 +68,10 @@ class Strategy():
                 self.pred_position = -1
                 pos = "exit from short"
         
+        
         # long    
         if signal == 1:
+            flag = True
             if self.position == 0:
                 self.position = signal
                 self.enter_price = price_now
@@ -84,13 +86,12 @@ class Strategy():
                     bank = self.enter_price * (self.bank / (self.enter_price / self.leverage)) - price_now * (self.bank / (self.enter_price / self.leverage)) \
                         + self.bank - fee_open - fee_close
                     self.enter_price = price_now
-                    # self.bank = bank
                     self.position = signal
                     self.pred_position = -1
+                    flag = False
                     
             # exit form long by take profit
-            # print(f"long: {self.TOKEN}: {((price_now  - self.enter_price) / self.enter_price * 100)}")
-            if ((price_now - self.enter_price) / self.enter_price * 100) > 0.35 and self.pred_position != -1:
+            if ((price_now - self.enter_price) / self.enter_price * 100) >= 0.35 and flag:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
@@ -99,9 +100,6 @@ class Strategy():
                 self.position = 0
                 self.pred_position = 1
                 pos = "exit from long"
-                
-        # print(f"self.bank: {self.bank}")
-        # print(f"bank: {bank}")
                 
         if self.bank == bank:
             return None
