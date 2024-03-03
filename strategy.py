@@ -61,7 +61,7 @@ class Strategy():
                 return [exit_report, enter_report]
             
             # exit from short by take profit
-            if ((self.enter_price  - price_now) / price_now * 100) >= 0.35:
+            if ((self.enter_price  - price_now) / price_now * 100) >= 0.55:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
@@ -103,7 +103,7 @@ class Strategy():
                     return [exit_report, enter_report]
                     
             # exit form long by take profit
-            if ((price_now - self.enter_price) / self.enter_price * 100) >= 0.35:
+            if ((price_now - self.enter_price) / self.enter_price * 100) >= 0.55:
                 v = (self.bank / (self.enter_price / self.leverage))
                 fee_open = (self.enter_price * v) * self.fee / 100
                 fee_close = (price_now * v) * self.fee / 100
