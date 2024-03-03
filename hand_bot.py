@@ -13,9 +13,9 @@ chat_id_ivan = "568629044"
 chat_id_nikita = "341437095"
 bot = telebot.TeleBot("6742853817:AAH4bj8AEi2wdHZjpbm-kUbHbddyI4Qnspw")
 
-strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
-strategy_btc = Strategy(TOKEN="BTCUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
-strategy_eth = Strategy(TOKEN="ETHUSDT", timeline=15, bank=100, leverage=2, fee=0.055, position=0)
+strategy_sol = Strategy(TOKEN="SOLUSDT", timeline=15, bank=100, leverage=5, fee=0.055, position=0)
+strategy_btc = Strategy(TOKEN="BTCUSDT", timeline=15, bank=100, leverage=5, fee=0.055, position=0)
+strategy_eth = Strategy(TOKEN="ETHUSDT", timeline=15, bank=100, leverage=5, fee=0.055, position=0)
 bot_flag = True
 
 def wrapper_send_message(chat_id, text, time_sleep):
